@@ -360,11 +360,11 @@ void pmu_device::spe_start(const std::map<std::wstring, uint64_t>& flags)
 
     for (const auto& [key, val] : flags)
     {
-        if ((key == L"load_filter"   || key == L"ld") && val)   opfilter |= SPE_OPERATON_FILTER_LD;
-        if ((key == L"store_filter"  || key == L"st") && val)   opfilter |= SPE_OPERATON_FILTER_ST;
-        if ((key == L"branch_filter" || key == L"b") && val)    opfilter |= SPE_OPERATON_FILTER_B;
-        if ((key == L"ts_enable"     || key == L"ts") && val)   config_flags |= SPE_CTL_FLAG_TS;
-        if ((key == L"min_latency"   || key == L"min") && val)
+        if (spe_device::get_filter_name(key) == L"load_filter" && val)   opfilter |= SPE_OPERATON_FILTER_LD;
+        if (spe_device::get_filter_name(key) == L"store_filter" && val)   opfilter |= SPE_OPERATON_FILTER_ST;
+        if (spe_device::get_filter_name(key) == L"branch_filter" && val)    opfilter |= SPE_OPERATON_FILTER_B;
+        if (spe_device::get_filter_name(key) == L"ts_enable" && val)   config_flags |= SPE_CTL_FLAG_TS;
+        if (spe_device::get_filter_name(key) == L"min_latency" && val)
         {
             UINT64 minlat = val & SPE_CTL_FLAG_VAL_MASK;   // PMSLATFR_EL1.MINLAT is 16 - bit value
             config_flags |= (minlat << 48);
@@ -1417,16 +1417,7 @@ void pmu_device::print_core_stat(std::vector<struct evt_noted>& events)
 
             struct pmu_event_usr* evt = &evts[j];
             
-#if defined(ENABLE_ETW_TRACING_APP)
-            if(evt->event_idx == CYCLE_EVENT_IDX)
-            {
-                EventWriteReadGPC(NULL, i, pmu_events_get_event_name((uint16_t)evt->event_idx), evt->event_idx, L"e", evt->value);
-            }
-            else {
-                EventWriteReadGPC(NULL, i, pmu_events_get_event_name((uint16_t)evt->event_idx), evt->event_idx, events[j - 1].note.c_str(), evt->value);
-            }
 
-#endif
 
             if (multiplexing)
             {
